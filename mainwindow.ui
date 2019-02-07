@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>401</width>
+    <height>339</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +17,47 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="OpenGLView" name="openGLView" native="true"/>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>R</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="redEdit"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>G</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="greenEdit"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>B</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="blueEdit"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="updateButton">
+      <property name="text">
+       <string>Установить</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
