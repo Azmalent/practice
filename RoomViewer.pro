@@ -4,14 +4,19 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl
+QT += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = RoomViewer
 TEMPLATE = app
 
-LIBS += -lglu32 -lopengl32
+INCLUDEPATH += \
+    "C:\sdk\assimp\include"\
+    "C:\sdk\assimp-4.0.1\include"
+
+LIBS += -lglu32 -lopengl32 \
+    "C:\sdk\assimp\code\libassimp.a"
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -29,14 +34,16 @@ CONFIG += c++11
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    openglview.cpp
+    openglview.cpp \
+    import/modelimporter.cpp
 
 HEADERS += \
     mainwindow.h \
-    openglview.h
+    openglview.h \
+    import/modelinfo.h \
+    import/modelimporter.h
 
-FORMS += \
-    mainwindow.ui
+FORMS += mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

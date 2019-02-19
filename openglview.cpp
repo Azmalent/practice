@@ -3,6 +3,8 @@
 
 #include <QMessageBox>
 
+#include "import/modelimporter.h"
+
 OpenGLView::OpenGLView(QWidget* parent) : QOpenGLWidget(parent)
 {
     QObject* window = MainWindow::instance();
@@ -34,7 +36,7 @@ void OpenGLView::resizeGL(int width, int height)
 }
 
 void OpenGLView::paintGL()
-{  
+{
    glClearColor(r, g, b, 1.0f);
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // очистка экрана
