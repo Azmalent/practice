@@ -13,9 +13,11 @@ TEMPLATE = app
 
 INCLUDEPATH += \
     "C:\sdk\assimp\include"\
-    "C:\sdk\assimp-4.0.1\include"
+    "C:\sdk\assimp-4.0.1\include"\
+    "C:\sdk\irrxml-1.2\src"\
+    "C:\sdk\Python36\include"
 
-LIBS += -lglu32 -lopengl32 \
+LIBS += -lglu32 -lopengl32 -lz \
     "C:\sdk\assimp\code\libassimp.a"
 
 # The following define makes your compiler emit warnings if you use
@@ -35,13 +37,21 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     openglview.cpp \
-    import/modelimporter.cpp
+    import/modelimporter.cpp \
+    import/modelimporter.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    openglview.cpp
 
 HEADERS += \
     mainwindow.h \
     openglview.h \
     import/modelinfo.h \
-    import/modelimporter.h
+    import/modelimporter.h \
+    import/modelimporter.h \
+    import/modelinfo.h \
+    mainwindow.h \
+    openglview.h
 
 FORMS += mainwindow.ui
 
@@ -49,3 +59,6 @@ FORMS += mainwindow.ui
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    scripts/convert.py

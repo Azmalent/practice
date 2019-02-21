@@ -2,6 +2,9 @@
 
 #include <QDebug>
 
+#include <irrXML.cpp>
+#include <zlib.h>
+
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
