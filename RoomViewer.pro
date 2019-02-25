@@ -11,13 +11,17 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = RoomViewer
 TEMPLATE = app
 
+QMAKE_CXXFLAGS +=
+
 INCLUDEPATH += \
-    "C:\sdk\assimp\include"\
-    "C:\sdk\assimp-4.0.1\include"\
-    "C:\sdk\irrxml-1.2\src"\
+    "C:\sdk\assimp\include"         \
+    "C:\sdk\assimp-4.0.1\include"   \
+    "C:\sdk\irrxml-1.2\src"         \
     "C:\sdk\Python36\include"
 
-LIBS += -lglu32 -lopengl32 -lassimp -lz
+LIBS += -lglu32 -lopengl32           \
+    "C:\sdk\assimp\code\libassimp.a" \
+    "C:\Program Files\Haskell Platform\8.2.2\mingw\lib\libz.a"
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -33,16 +37,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-    main.cpp \
-    mainwindow.cpp \
-    openglview.cpp \
-    import/modelimporter.cpp
+    main.cpp            \
+    mainwindow.cpp      \
+    openglview.cpp      \
+    modelimporter.cpp
 
 HEADERS += \
-    mainwindow.h \
-    openglview.h \
-    import/modelinfo.h \
-    import/modelimporter.h
+    mainwindow.h    \
+    openglview.h    \
+    modelinfo.h     \
+    modelimporter.h
 
 FORMS += mainwindow.ui
 
@@ -51,5 +55,5 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-DISTFILES += \
-    scripts/convert.py
+RESOURCES += \
+    resources.qrc
