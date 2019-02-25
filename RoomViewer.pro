@@ -17,8 +17,7 @@ INCLUDEPATH += \
     "C:\sdk\irrxml-1.2\src"\
     "C:\sdk\Python36\include"
 
-LIBS += -lglu32 -lopengl32 -lz \
-    "C:\sdk\assimp\code\libassimp.a"
+LIBS += -lglu32 -lopengl32 -lassimp -lz
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -37,21 +36,13 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     openglview.cpp \
-    import/modelimporter.cpp \
-    import/modelimporter.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    openglview.cpp
+    import/modelimporter.cpp
 
 HEADERS += \
     mainwindow.h \
     openglview.h \
     import/modelinfo.h \
-    import/modelimporter.h \
-    import/modelimporter.h \
-    import/modelinfo.h \
-    mainwindow.h \
-    openglview.h
+    import/modelimporter.h
 
 FORMS += mainwindow.ui
 

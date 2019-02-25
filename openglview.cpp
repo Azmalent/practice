@@ -3,8 +3,6 @@
 
 #include <QMessageBox>
 
-#include "import/modelimporter.h"
-
 OpenGLView::OpenGLView(QWidget* parent) : QOpenGLWidget(parent)
 {
     QObject* window = MainWindow::instance();
