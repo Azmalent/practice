@@ -32,8 +32,8 @@ class OpenGLView : public QOpenGLWidget, public QOpenGLFunctions
         void paintGL() override;
 
     private:
+        void createShaders();
         void createGeometry();
-        void createShaders(QString vertexFilename, QString fragmentFilename);
         void addShader(QString filename, QOpenGLShader::ShaderTypeBit type);
         void drawModel();
         void drawNode(const QMatrix4x4& model, const Node* node, QMatrix4x4 parent);

@@ -24,20 +24,16 @@ void OpenGLView::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    createShaders(":/shaders/vertex.glsl", ":/shaders/fragment.glsl");
-    shaders.bind();
-
-    shaders.setUniformValue("light.position",   QVector4D(-1.0f,  1.0f, 1.0f, 1.0f));
-    shaders.setUniformValue("light.intensity",  QVector3D( 1.0f,  1.0f, 1.0f));
-
+    createShaders();
     createGeometry();
+
     view.setToIdentity();
     view.lookAt(QVector3D(0.0f, 0.0f, 1.2f),    // позиция камеры
                 QVector3D(0.0f, 0.0f, 0.0f),    // точка, куда направлена камера
                 QVector3D(0.0f, 1.0f, 0.0f));   // направление вверх
 
-    glClearColor(r, g, b, 1.0f);
 
+    glClearColor(r, g, b, 1.0f);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);                  // глубина проверки пикселей
     glEnable(GL_CULL_FACE);                   // говорим, что будем строить только внешние поверхности
@@ -67,6 +63,19 @@ void OpenGLView::paintGL()
    drawModel();
    vertexArray.release();
    update();
+}
+
+void OpenGLView::createShaders() {
+    addShader(":/shaders/vertex.vert",   QOpenGLShader::Vertex);
+    addShader(":/shaders/fragment.frag", QOpenGLShader::Fragment);
+    if(!shaders.link() ) {
+        qDebug() << "Error linking shader program: " << shaders.log();
+        exit(1);
+    }
+
+    shaders.bind();
+    shaders.setUniformValue("u_light.position",   QVector4D(-1.0f,  1.0f, 1.0f, 1.0f));
+    shaders.setUniformValue("u_light.intensity",  QVector3D( 1.0f,  1.0f, 1.0f));
 }
 
 void OpenGLView::createGeometry()
@@ -110,17 +119,6 @@ void OpenGLView::createGeometry()
     vertexArray.release();
 }
 
-void OpenGLView::createShaders(QString vertexFilename, QString fragmentFilename)
-{
-    addShader(vertexFilename,   QOpenGLShader::Vertex);
-    addShader(fragmentFilename, QOpenGLShader::Fragment);
-
-    if(!shaders.link() ) {
-        qDebug() << "Error linking shader program: " << shaders.log();
-        exit(1);
-    }
-}
-
 void OpenGLView::addShader(QString filename, QOpenGLShader::ShaderTypeBit type)
 {
     QFile file(filename);
@@ -151,28 +149,25 @@ void OpenGLView::drawNode(const QMatrix4x4& model, const Node* node, QMatrix4x4 
     QMatrix4x4 local = parent * node->transformMatrix;
     QMatrix4x4 mv = view * model * local;
 
-    shaders.setUniformValue("MV",  mv);
-    shaders.setUniformValue("N",   mv.normalMatrix());
-    shaders.setUniformValue("MVP", projection * mv);
+    shaders.setUniformValue("u_MV",  mv);
+    shaders.setUniformValue("u_N",   mv.normalMatrix());
+    shaders.setUniformValue("u_MVP", projection * mv);
 
     // Отрисовка мешей
     for(int i = 0; i < node->meshes.size(); i++)
     {
         const Mesh& m = *node->meshes[i];
 
-        if (m.material->name == QString("DefaultMaterial"))
-        {
-            shaders.setUniformValue("material.Ka",        QVector3D(  0.05f, 0.2f, 0.05f ));
-            shaders.setUniformValue("material.Kd",        QVector3D(  0.3f,  0.5f, 0.3f  ));
-            shaders.setUniformValue("material.Ks",        QVector3D(  0.6f,  0.6f, 0.6f  ));
-            shaders.setUniformValue("material.shininess", 50.f);
-        }
-        else
-        {
-            shaders.setUniformValue("material.Ka",        m.material->ambient);
-            shaders.setUniformValue("material.Kd",        m.material->diffuse);
-            shaders.setUniformValue("material.Ks",        m.material->specular);
-            shaders.setUniformValue("material.shininess", m.material->shine);
+        if (m.material->name != QString("DefaultMaterial")) {
+            shaders.setUniformValue("u_material.ambient",   m.material->ambient);
+            shaders.setUniformValue("u_material.diffuse",   m.material->diffuse);
+            shaders.setUniformValue("u_material.specular",  m.material->specular);
+            shaders.setUniformValue("u_material.shine",     m.material->shine);
+        } else {
+            shaders.setUniformValue("u_material.ambient",   QVector3D(0.05f, 0.2f, 0.05f));
+            shaders.setUniformValue("u_material.diffuse",   QVector3D(0.3f,  0.5f, 0.3f));
+            shaders.setUniformValue("u_material.specular",  QVector3D(0.6f,  0.6f, 0.6f));
+            shaders.setUniformValue("u_material.shine",     50.f);
         }
 
         const GLvoid* indices = reinterpret_cast<const GLvoid*>(m.indexOffset * sizeof(GLuint));
