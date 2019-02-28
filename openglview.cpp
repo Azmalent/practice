@@ -1,9 +1,12 @@
 #include "openglview.h"
 #include "mainwindow.h"
 
+#include <QtMath>
+
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
+#include <QMouseEvent>
 
 OpenGLView::OpenGLView(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -27,16 +30,10 @@ void OpenGLView::initializeGL()
     createShaders();
     createGeometry();
 
-    view.setToIdentity();
-    view.lookAt(QVector3D(0.0f, 0.0f, 1.2f),    // позиция камеры
-                QVector3D(0.0f, 0.0f, 0.0f),    // точка, куда направлена камера
-                QVector3D(0.0f, 1.0f, 0.0f));   // направление вверх
-
-
     glClearColor(r, g, b, 1.0f);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);                  // глубина проверки пикселей
-    glEnable(GL_CULL_FACE);                   // говорим, что будем строить только внешние поверхности
+    glEnable(GL_CULL_FACE);                   // будем строить только внешние поверхности
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL); // фигуры будут закрашены с обеих сторон
 }
 
@@ -80,7 +77,7 @@ void OpenGLView::createShaders() {
 
 void OpenGLView::createGeometry()
 {
-    if(!importer.Load("C:/Users/Dmitry/Desktop/ink.stl"))
+    if(!importer.Load("C:/Users/Dmitry/Desktop/ink.obj"))
     {
         qDebug() << "Error loading model: " << shaders.log();
         exit(1);
@@ -137,21 +134,25 @@ void OpenGLView::addShader(QString filename, QOpenGLShader::ShaderTypeBit type)
 
 void OpenGLView::drawModel()
 {
-    QMatrix4x4 model;
-    model.translate(-0.2f, 0.0f, 0.5f);
-    model.rotate(55.0f, 0.0f, 1.0f, 0.0f);
+    view.setToIdentity();
+    view.lookAt(QVector3D(0.0f, 0.0f, 1.2f),  // позиция камеры
+                QVector3D(0.0f, 0.0f, 0.0f),  // центр
+                QVector3D(0.0f, 1.0f, 0.0f)); // направление вверх
 
+    view.rotate(rotation);
+
+    QMatrix4x4 model;
     drawNode(model, importer.getRoot().data(), QMatrix4x4());
 }
 
 void OpenGLView::drawNode(const QMatrix4x4& model, const Node* node, QMatrix4x4 parent)
 {
     QMatrix4x4 local = parent * node->transformMatrix;
-    QMatrix4x4 mv = view * model * local;
+    QMatrix4x4 modelview = view * model * local;
 
-    shaders.setUniformValue("u_MV",  mv);
-    shaders.setUniformValue("u_N",   mv.normalMatrix());
-    shaders.setUniformValue("u_MVP", projection * mv);
+    shaders.setUniformValue("u_MV",  modelview);
+    shaders.setUniformValue("u_N",   modelview.normalMatrix());
+    shaders.setUniformValue("u_MVP", projection * modelview);
 
     // Отрисовка мешей
     for(int i = 0; i < node->meshes.size(); i++)
@@ -190,3 +191,30 @@ void OpenGLView::updateColor(GLint ir, GLint ig, GLint ib)
     repaint();
 }
 
+void OpenGLView::mousePressEvent(QMouseEvent *event)
+{
+    if(event->buttons() == Qt::LeftButton) {
+        newMousePos = QVector2D(event->localPos());
+        oldMousePos = newMousePos;
+    }
+
+    event->accept();
+}
+
+void OpenGLView::mouseMoveEvent(QMouseEvent *event)
+{
+    if(event->buttons() == Qt::LeftButton) {
+        newMousePos = QVector2D(event->localPos());
+
+        QVector2D delta = newMousePos - oldMousePos;
+
+        float angle = delta.length() / 2.0;
+        QVector3D axis = QVector3D(delta.y(), delta.x(), 0.0);
+
+        rotation = QQuaternion::fromAxisAndAngle(axis, angle) * rotation;
+
+        oldMousePos = newMousePos;
+    }
+
+    event->accept();
+}
