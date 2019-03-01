@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>401</width>
-    <height>417</height>
+    <width>550</width>
+    <height>701</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,13 +23,40 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="tabPosition">
+       <enum>QTabWidget::North</enum>
+      </property>
+      <property name="tabShape">
+       <enum>QTabWidget::Rounded</enum>
+      </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_editor">
        <attribute name="title">
         <string>Редактирование</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="RoomEditor" name="roomEditor" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>500</width>
+            <height>500</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>500</width>
+            <height>500</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(0, 0, 0)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="tab_3dview">
        <attribute name="title">
@@ -37,7 +64,17 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="OpenGLView" name="openGLView" native="true"/>
+         <widget class="OpenGLView" name="openGLView" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>500</width>
+            <height>500</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgba(0, 0, 0, 255);</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="colorEditBox">
@@ -114,6 +151,11 @@
    <class>OpenGLView</class>
    <extends>QWidget</extends>
    <header>openglview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>RoomEditor</class>
+   <extends>QWidget</extends>
+   <header>roomeditor.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

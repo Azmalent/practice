@@ -41,14 +41,16 @@ SOURCES += \
     mainwindow.cpp      \
     openglview.cpp      \
     modelimporter.cpp \
-    roomeditor.cpp
+    roomeditor.cpp \
+    model3d.cpp
 
 HEADERS += \
     mainwindow.h    \
     openglview.h    \
     modelinfo.h     \
     modelimporter.h \
-    roomeditor.h
+    roomeditor.h \
+    model3d.h
 
 FORMS += mainwindow.ui
 
