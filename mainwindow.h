@@ -29,8 +29,11 @@ class MainWindow : public QMainWindow
     private slots:
         void on_updateButton_clicked();
 
+        void on_tabWidget_currentChanged(int index);
+
     signals:
         void updateColorSignal(GLint r, GLint g, GLint b);
+        void updateGeometrySignal(QVector<QPointF> points, QVector<int> indices);
 };
 
 #endif

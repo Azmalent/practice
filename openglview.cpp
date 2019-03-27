@@ -12,11 +12,16 @@
 #define UNITS_PER_DEGREE 8
 #define DEGREES_PER_STEP 15
 
+#define EXTRUDE_DISTANCE 0.1
+
 OpenGLView::OpenGLView(QWidget* parent) : QOpenGLWidget(parent)
 {
     QObject* window = MainWindow::instance();
     QObject::connect(window, SIGNAL( updateColorSignal(GLint, GLint, GLint) ),
                      this, SLOT( updateColor(GLint, GLint, GLint) ));
+
+    QObject::connect(window, SIGNAL( updateGeometrySignal(QVector<QPointF>, QVector<int>) ),
+                     this, SLOT( updateGeometry(QVector<QPointF>, QVector<int>) ));
 
     r = 1.0f;
     g = 1.0f;
@@ -32,27 +37,26 @@ OpenGLView::OpenGLView(QWidget* parent) : QOpenGLWidget(parent)
 void OpenGLView::initializeGL()
 {
     initializeOpenGLFunctions();
-
     createShaders();
 
-    if(!importer.Load("C:/Users/Dmitry/Desktop/ink.obj"))
-    {
-        qDebug() << "Error loading model: " << shaders.log();
-        exit(1);
-    }
+//    if(!importer.Load("C:/Users/Dmitry/Desktop/ink.obj"))
+//    {
+//        qDebug() << "Error loading model: " << shaders.log();
+//        exit(1);
+//    }
 
     QVector<float>* vertices;
     QVector<float>* normals;
     QVector<uint>*  indices;
-    importer.getBufferData(&vertices, &normals, &indices);
-    createGeometry(vertices, normals, indices);
-    root = importer.getRoot().data();
+//    importer.getBufferData(&vertices, &normals, &indices);
+//    createGeometry(vertices, normals, indices);
+//    root = importer.getRoot().data();
 
     glClearColor(r, g, b, 1.0f);
     glShadeModel(GL_SMOOTH);
-    glEnable(GL_DEPTH_TEST);                  // глубина проверки пикселей
-    glEnable(GL_CULL_FACE);                   // будем строить только внешние поверхности
-    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL); // фигуры будут закрашены с обеих сторон
+    glEnable(GL_DEPTH_TEST);                  
+    glEnable(GL_CULL_FACE);                   
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 }
 
 void OpenGLView::resizeGL(int width, int height)
@@ -149,7 +153,22 @@ void OpenGLView::drawModel()
     view.scale(scale);
 
     QMatrix4x4 model;
-    drawNode(model, root, QMatrix4x4());
+//    drawNode(model, root, QMatrix4x4());
+
+
+    //временный код
+    //TODO: реализовать хранение сгенерированной геометрии в узле
+    QMatrix4x4 modelview = view * model;
+    shaders.setUniformValue("u_MV",  modelview);
+    shaders.setUniformValue("u_N",   modelview.normalMatrix());
+    shaders.setUniformValue("u_MVP", projection * modelview);
+
+    shaders.setUniformValue("u_material.ambient",   QVector3D(0.05f, 0.2f, 0.05f));
+    shaders.setUniformValue("u_material.diffuse",   QVector3D(0.3f,  0.5f, 0.3f));
+    shaders.setUniformValue("u_material.specular",  QVector3D(0.6f,  0.6f, 0.6f));
+    shaders.setUniformValue("u_material.shine",     50.f);
+
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 }
 
 void OpenGLView::drawNode(const QMatrix4x4& model, const Node* node, QMatrix4x4 parent)
@@ -243,11 +262,97 @@ void OpenGLView::zoom(int n)
     repaint();
 }
 
-void OpenGLView::getModelFromVector(QVector<QPointF> points)
+void OpenGLView::updateGeometry(QVector<QPointF> basePoints, QVector<int> baseIndices)
 {
-    QVector<float>* vertices;
-    QVector<float>* normals;
-    QVector<uint>*  indices;
+    int scale = 1000000;
+
+    int n = basePoints.length(), m = baseIndices.length();
+    if(n < 3 || m < 3 || m % 3 != 0) return;
+
+    QVector<float> vertices, normals;
+    QVector<uint>  indices;
+
+    //НИЖНЯЯ СТОРОНА
+    for(int i = 0; i < n; i++)
+    {
+        QPointF p = basePoints[i] / scale;
+        vertices.push_back( p.x() );
+        vertices.push_back( p.y() );
+        vertices.push_back(0);
+    }
+
+    for(int i = 0; i < m; i += 3)
+    {
+        indices.push_back( baseIndices[ i ] );
+        indices.push_back( baseIndices[i+1] );
+        indices.push_back( baseIndices[i+2] );
+
+        //Нормаль направлена вертикально вниз: (0, 0, -1)
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(-1);
+    }
+
+    //ВЕРХНЯЯ СТОРОНА
+    for(int i = 0; i < n; i++)
+    {
+        QPointF p = basePoints[i] / scale;
+        vertices.push_back( p.x() );
+        vertices.push_back( p.y() );
+        vertices.push_back( EXTRUDE_DISTANCE );
+    }
+
+    for(int i = 0; i < m; i += 3)
+    {
+        indices.push_back( baseIndices[ i ] + n );
+        indices.push_back( baseIndices[i+1] + n );
+        indices.push_back( baseIndices[i+2] + n );
+
+        //Нормаль направлена вертикально вверх: (0, 0, 1)
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(1);
+    }
+
+    //Боковые стороны
+    for(int i = 0; i < n; i++)
+    {
+        int next = (i == n-1) ? 0 : i+1;
+
+        indices.push_back(i);
+        indices.push_back(next);
+        indices.push_back(i+n);
+
+        indices.push_back(i);
+        indices.push_back(next);
+        indices.push_back(next+n);
+
+        float nX = vertices[i*3 + 1] - vertices[next*3 + 1];    //y1 - y2
+        float nY = vertices[next*3] - vertices[i*3];            //x2 - x1
+
+        float dist = std::sqrt(nX*nX + nY*nY);
+        nX /= dist;
+        nY /= dist;
+
+        normals.push_back(nX);
+        normals.push_back(nY);
+        normals.push_back(0);
+        normals.push_back(nX);
+        normals.push_back(nY);
+        normals.push_back(0);
+    }
+
+    QSharedPointer<Mesh> mesh = QSharedPointer<Mesh>(new Mesh);
+    mesh->name = "Generated mesh";
+    mesh->indexCount = indices.length();
+
+    mesh->material = QSharedPointer<Material>(new Material);
+    mesh->material->name = "DefaultMaterial";
+
+    Node* root = new Node;
+    root->name = "Generated node";
+    root->meshes.push_back(mesh);
+    this->root = root;
 
     if(vertexArray.isCreated()) {
         vertexArray.destroy();
@@ -256,25 +361,8 @@ void OpenGLView::getModelFromVector(QVector<QPointF> points)
         indexBuffer.destroy();
     }
 
-    int n = points.size();
+    this->indexCount = m;
 
-    //Преобразуем точки в вершины
-    for(int i = 0; i < n; i++)
-    {
-        float x = (points[i].x() - 250) / 50;
-        float y = (points[i].y() - 250) / 50;
-
-        vertices->push_back(x);
-        vertices->push_back(y);
-        vertices->push_back(0);
-    }
-
-    //Потолок
-    //Каждый третий элемент (координата Z) устанавливаем в высоту помещения, остальные координаты дублируем
-    for(int i = 0; i < n; i++)
-    {
-        vertices->push_back(i%3 != 0 ? ROOM_HEIGHT : (*vertices)[i]);
-    }
-
-    //TODO...
+    createGeometry(&vertices, &normals, &indices);
+    repaint();
 }

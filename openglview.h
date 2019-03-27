@@ -28,6 +28,8 @@ class OpenGLView : public QOpenGLWidget, public QOpenGLFunctions
         GLclampf g;
         GLclampf b;
 
+
+
     protected:
         void initializeGL() override;
         void resizeGL(int width, int height) override;
@@ -59,9 +61,12 @@ class OpenGLView : public QOpenGLWidget, public QOpenGLFunctions
         QVector2D oldMousePos, newMousePos;
         float scale;
 
-private slots:
+        int indexCount;
+
+    private slots:
         void updateColor(GLint r, GLint g, GLint b);
-        void getModelFromVector(QVector<QPointF> points);
+        void updateGeometry(QVector<QPointF> basePoints, QVector<int> baseIndices);
+        //void exportGeometry(); //TODO
 };
 
 #endif

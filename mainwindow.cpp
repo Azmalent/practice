@@ -36,3 +36,12 @@ void MainWindow::on_updateButton_clicked()
 
     emit updateColorSignal(r, g, b);
 }
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    if (index != 1) return;
+
+    QVector<QPointF> points = ui->roomEditor->getPoints();
+    QVector<int> indices = ui->roomEditor->triangulate();
+    emit updateGeometrySignal(points, indices);
+}

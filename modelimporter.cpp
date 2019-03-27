@@ -174,20 +174,20 @@ QSharedPointer<Mesh> ModelImporter::processMesh(aiMesh* mesh)
 }
 
 void ModelImporter::processNode(const aiScene* scene, aiNode* node, Node* parent, Node& newNode)
+{
+    newNode.name = node->mName.length > 0 ? node->mName.C_Str() : "";
+    newNode.transformMatrix = QMatrix4x4(node->mTransformation[0]);
+
+    newNode.meshes.resize(node->mNumMeshes);
+    for(uint i = 0; i < node->mNumMeshes; i++)
     {
-        newNode.name = node->mName.length > 0 ? node->mName.C_Str() : "";
-        newNode.transformMatrix = QMatrix4x4(node->mTransformation[0]);
-
-        newNode.meshes.resize(node->mNumMeshes);
-        for(uint i = 0; i < node->mNumMeshes; i++)
-        {
-            uint meshIndex = node->mMeshes[i];
-            newNode.meshes[i] = meshes[meshIndex];
-        }
-
-        for(uint i = 0; i < node->mNumChildren; i++)
-        {
-            newNode.children.push_back(Node());
-            processNode(scene, node->mChildren[i], parent, newNode.children[i]);
-        }
+        uint meshIndex = node->mMeshes[i];
+        newNode.meshes[i] = meshes[meshIndex];
     }
+
+    for(uint i = 0; i < node->mNumChildren; i++)
+    {
+        newNode.children.push_back(Node());
+        processNode(scene, node->mChildren[i], parent, newNode.children[i]);
+    }
+}
